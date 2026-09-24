@@ -1,0 +1,1225 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>实时汇率与趋势分析助手</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0f766e;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --green: #059669;
+      --red: #dc2626;
+      --orange: #ea580c;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 32rem),
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 28rem),
+        var(--bg);
+      line-height: 1.65;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0 30px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.28);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.06fr) minmax(340px, 0.94fr);
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .converter-card,
+    .section-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-copy {
+      padding: 44px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      bottom: -80px;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(15, 118, 110, 0.14));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: #075985;
+      background: #e0f2fe;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 22px 0 18px;
+      max-width: 680px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.08;
+      letter-spacing: -0.06em;
+    }
+
+    .hero-copy p {
+      position: relative;
+      z-index: 1;
+      max-width: 660px;
+      margin: 0;
+      color: #4b5563;
+      font-size: 18px;
+    }
+
+    .hero-actions {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 14px 26px rgba(37, 99, 235, 0.26);
+    }
+
+    .btn-ghost {
+      color: #1f2937;
+      background: #eef2ff;
+    }
+
+    .converter-card {
+      padding: 26px;
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card-title-row h2,
+    .section-card h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: var(--green);
+      background: #ecfdf5;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 0 5px rgba(5, 150, 105, 0.12);
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      background: #fff;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(37, 99, 235, 0.7);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .result-box {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 18px;
+      color: #064e3b;
+      background: linear-gradient(135deg, #ecfdf5, #eff6ff);
+      border: 1px solid #d1fae5;
+    }
+
+    .result-amount {
+      font-size: 30px;
+      line-height: 1.15;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .result-meta {
+      margin-top: 6px;
+      color: #047857;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .ticker {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin: 24px 0;
+    }
+
+    .ticker-item {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+    }
+
+    .pair {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .rate {
+      margin-top: 8px;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .change {
+      margin-top: 6px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .up { color: var(--green); }
+    .down { color: var(--red); }
+    .flat { color: var(--orange); }
+
+    .sections {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .section-card {
+      padding: 28px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .muted {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .trend-toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 260px) 1fr;
+      gap: 14px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .trend-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .summary-chip {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #f8fafc;
+    }
+
+    .summary-chip span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .summary-chip strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 18px;
+      letter-spacing: -0.03em;
+    }
+
+    .chart {
+      height: 280px;
+      padding: 18px;
+      border-radius: 20px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .line-chart {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .grid-line {
+      stroke: #e5e7eb;
+      stroke-width: 1;
+    }
+
+    .axis-label {
+      fill: #64748b;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .history-line {
+      fill: none;
+      stroke: #2563eb;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .forecast-line {
+      fill: none;
+      stroke: #0f766e;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 7 7;
+    }
+
+    .forecast-area {
+      fill: rgba(15, 118, 110, 0.08);
+    }
+
+    .chart-point {
+      fill: #ffffff;
+      stroke-width: 2.5;
+    }
+
+    .history-point { stroke: #2563eb; }
+    .forecast-point { stroke: #0f766e; }
+
+    .today-marker {
+      stroke: #94a3b8;
+      stroke-width: 1.5;
+      stroke-dasharray: 5 5;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend-line {
+      width: 28px;
+      height: 0;
+      border-top: 3px solid #2563eb;
+      border-radius: 999px;
+    }
+
+    .legend-line.forecast {
+      border-top-color: #0f766e;
+      border-top-style: dashed;
+    }
+
+    .analysis-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 44px;
+    }
+
+    .analysis-item {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border-radius: 16px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+    }
+
+    .analysis-icon {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: #e0f2fe;
+    }
+
+    .analysis-item strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .analysis-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .alert-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .alert-preview {
+      padding: 16px;
+      border-radius: 18px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .feature {
+      padding: 20px;
+      border-radius: 20px;
+      background: #fff;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
+    }
+
+    .feature h3 {
+      margin: 10px 0 8px;
+      font-size: 17px;
+    }
+
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .scenario-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      padding: 9px 12px;
+      border-radius: 999px;
+      color: #334155;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .footer {
+      padding: 34px 0 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .sections {
+        grid-template-columns: 1fr;
+      }
+
+      .ticker,
+      .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page {
+        padding: 16px;
+      }
+
+      .nav {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+      }
+
+      .hero-copy,
+      .converter-card,
+      .section-card {
+        border-radius: 22px;
+        padding: 22px;
+      }
+
+      .grid-2,
+      .ticker,
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .trend-toolbar,
+      .trend-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .chart {
+        height: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="nav">
+      <a class="brand" href="#top" aria-label="实时汇率与趋势分析助手首页">
+        <span class="brand-icon">¥$</span>
+        <span>实时汇率与趋势分析助手</span>
+      </a>
+      <div class="nav-links" aria-label="页面导航">
+        <a href="#converter">汇率换算</a>
+        <a href="#trend">趋势分析</a>
+        <a href="#alert">汇率提醒</a>
+        <a href="#scenes">适用场景</a>
+      </div>
+    </nav>
+
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <span class="eyebrow">多币种 · 实时换算 · 趋势参考</span>
+        <h1>快速了解汇率变化对实际金额的影响</h1>
+        <p>
+          面向跨境业务、海外消费及出行场景，提供多币种实时汇率查询与换算服务，
+          并结合历史汇率走势、涨跌幅和趋势判断，为换汇、支付和跨境交易提供数据参考。
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#converter">立即换算</a>
+          <a class="btn btn-ghost" href="#alert">设置提醒</a>
+        </div>
+      </div>
+
+      <section class="converter-card" id="converter" aria-labelledby="converter-title">
+        <div class="card-title-row">
+          <div>
+            <h2 id="converter-title">实时汇率换算</h2>
+            <p class="muted">当前为演示汇率，可接入真实汇率 API。</p>
+          </div>
+          <span class="live-pill"><span class="dot"></span>LIVE</span>
+        </div>
+
+        <div class="field">
+          <label for="amount">输入金额</label>
+          <input id="amount" type="number" min="0" step="0.01" value="100" />
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="fromCurrency">原始货币</label>
+            <select id="fromCurrency">
+              <option value="USD">美元 USD</option>
+              <option value="CNY">人民币 CNY</option>
+              <option value="EUR">欧元 EUR</option>
+              <option value="JPY">日元 JPY</option>
+              <option value="GBP">英镑 GBP</option>
+              <option value="HKD">港币 HKD</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="toCurrency">目标货币</label>
+            <select id="toCurrency">
+              <option value="CNY">人民币 CNY</option>
+              <option value="USD">美元 USD</option>
+              <option value="EUR">欧元 EUR</option>
+              <option value="JPY">日元 JPY</option>
+              <option value="GBP">英镑 GBP</option>
+              <option value="HKD">港币 HKD</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" type="button" onclick="convertCurrency()">计算换算结果</button>
+
+        <div class="result-box" aria-live="polite">
+          <div class="result-amount" id="resultAmount">100 USD ≈ 728.00 CNY</div>
+          <div class="result-meta" id="resultMeta">参考汇率：1 USD = 7.2800 CNY</div>
+        </div>
+      </section>
+    </section>
+
+    <section class="ticker" aria-label="热门货币对行情">
+      <article class="ticker-item">
+        <div class="pair"><span>USD/CNY</span><span>美元兑人民币</span></div>
+        <div class="rate">7.2800</div>
+        <div class="change up">▲ +0.32% 今日</div>
+      </article>
+      <article class="ticker-item">
+        <div class="pair"><span>EUR/CNY</span><span>欧元兑人民币</span></div>
+        <div class="rate">7.8500</div>
+        <div class="change down">▼ -0.18% 今日</div>
+      </article>
+      <article class="ticker-item">
+        <div class="pair"><span>JPY/CNY</span><span>日元兑人民币</span></div>
+        <div class="rate">0.0490</div>
+        <div class="change flat">◆ +0.04% 今日</div>
+      </article>
+      <article class="ticker-item">
+        <div class="pair"><span>GBP/CNY</span><span>英镑兑人民币</span></div>
+        <div class="rate">9.1500</div>
+        <div class="change up">▲ +0.41% 今日</div>
+      </article>
+    </section>
+
+    <section class="sections">
+      <article class="section-card" id="trend">
+        <div class="section-head">
+          <div>
+            <h2>历史汇率走势与趋势分析</h2>
+            <p class="muted">显示过去一个月历史走势，并给出未来 7 天预测走势。</p>
+          </div>
+        </div>
+
+        <div class="trend-toolbar">
+          <div class="field" style="margin-bottom: 0;">
+            <label for="trendPair">选择货币对</label>
+            <select id="trendPair" onchange="updateTrendChart()">
+              <option value="USD/CNY">USD/CNY 美元兑人民币</option>
+              <option value="EUR/CNY">EUR/CNY 欧元兑人民币</option>
+              <option value="JPY/CNY">JPY/CNY 日元兑人民币</option>
+              <option value="GBP/CNY">GBP/CNY 英镑兑人民币</option>
+              <option value="HKD/CNY">HKD/CNY 港币兑人民币</option>
+            </select>
+          </div>
+          <div class="trend-summary" aria-label="趋势摘要">
+            <div class="summary-chip">
+              <span>当前汇率</span>
+              <strong id="trendCurrent">7.2800</strong>
+            </div>
+            <div class="summary-chip">
+              <span>近 30 天涨跌</span>
+              <strong id="trendMonthlyChange" class="up">+1.20%</strong>
+            </div>
+            <div class="summary-chip">
+              <span>7 天预测</span>
+              <strong id="trendForecastChange" class="up">+0.36%</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart" aria-label="过去一个月历史及未来7天预测汇率曲线图">
+          <svg class="line-chart" id="trendChart" viewBox="0 0 760 280" role="img" aria-labelledby="trendChartTitle trendChartDesc">
+            <title id="trendChartTitle">汇率曲线图</title>
+            <desc id="trendChartDesc">蓝色实线表示过去一个月历史汇率，绿色虚线表示未来七天预测汇率。</desc>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-line"></span>过去一个月历史汇率</span>
+          <span class="legend-item"><span class="legend-line forecast"></span>未来 7 天预测走势</span>
+        </div>
+
+        <div class="analysis-list">
+          <div class="analysis-item">
+            <div class="analysis-icon">📈</div>
+            <div>
+              <strong id="trendDirectionTitle">近期趋势：小幅上涨</strong>
+              <p id="trendDirectionText">过去 30 天 USD/CNY 整体抬升，演示累计涨幅约 1.20%。</p>
+            </div>
+          </div>
+          <div class="analysis-item">
+            <div class="analysis-icon">⚖️</div>
+            <div>
+              <strong id="trendVolatilityTitle">波动判断：中低波动</strong>
+              <p id="trendVolatilityText">汇率运行区间相对稳定，适合持续关注关键点位。</p>
+            </div>
+          </div>
+          <div class="analysis-item">
+            <div class="analysis-icon">💡</div>
+            <div>
+              <strong>参考建议</strong>
+              <p id="trendAdviceText">若计划换汇，可结合目标汇率提醒，关注 7.30 附近变化。</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="section-card" id="alert">
+        <div class="section-head">
+          <div>
+            <h2>汇率提醒</h2>
+            <p class="muted">持续关注指定货币对，到达条件及时提示。</p>
+          </div>
+        </div>
+
+        <div class="alert-panel">
+          <div class="field">
+            <label for="watchPair">关注货币对</label>
+            <select id="watchPair" onchange="updateAlertPreview()">
+              <option value="USD/CNY">USD/CNY</option>
+              <option value="EUR/CNY">EUR/CNY</option>
+              <option value="JPY/CNY">JPY/CNY</option>
+              <option value="GBP/CNY">GBP/CNY</option>
+              <option value="HKD/CNY">HKD/CNY</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="condition">提醒条件</label>
+            <select id="condition" onchange="updateAlertPreview()">
+              <option value="高于">汇率高于</option>
+              <option value="低于">汇率低于</option>
+              <option value="涨跌幅超过">单日涨跌幅超过</option>
+              <option value="明显上涨或下跌">出现明显上涨/下跌</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="targetValue">目标值</label>
+            <input id="targetValue" type="number" step="0.0001" value="7.30" oninput="updateAlertPreview()" />
+          </div>
+          <div class="alert-preview" id="alertPreview">
+            将在 USD/CNY 高于 7.30 时提醒你。
+          </div>
+          <button class="btn btn-primary" type="button" onclick="saveAlert()">模拟保存提醒</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section-card" id="features" style="margin-top: 24px;">
+      <div class="section-head">
+        <div>
+          <h2>核心能力</h2>
+          <p class="muted">围绕查询、换算、分析和提醒构建的一站式汇率助手。</p>
+        </div>
+      </div>
+      <div class="feature-grid">
+        <div class="feature">
+          <div>🌍</div>
+          <h3>多币种查询</h3>
+          <p>支持美元、欧元、日元、英镑、人民币、港币等常见币种。</p>
+        </div>
+        <div class="feature">
+          <div>🔁</div>
+          <h3>实时金额换算</h3>
+          <p>输入金额并选择币种，即可快速计算跨币种换算结果。</p>
+        </div>
+        <div class="feature">
+          <div>📊</div>
+          <h3>历史走势</h3>
+          <p>展示近期汇率变化，辅助判断上升、下跌或震荡趋势。</p>
+        </div>
+        <div class="feature">
+          <div>📉</div>
+          <h3>涨跌幅分析</h3>
+          <p>自动展示单日及周期涨跌幅，便于评估汇率波动影响。</p>
+        </div>
+        <div class="feature">
+          <div>🔔</div>
+          <h3>条件提醒</h3>
+          <p>支持高于、低于目标汇率及明显波动等提醒场景。</p>
+        </div>
+        <div class="feature">
+          <div>🧭</div>
+          <h3>场景决策参考</h3>
+          <p>为换汇、海外消费、国际收付款和跨境交易提供参考。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="scenes" style="margin-top: 24px;">
+      <div class="section-head">
+        <div>
+          <h2>适用场景</h2>
+          <p class="muted">帮助不同用户快速理解汇率变化对实际金额的影响。</p>
+        </div>
+      </div>
+      <div class="scenario-tags">
+        <span class="tag">跨境电商结算</span>
+        <span class="tag">海外旅行换汇</span>
+        <span class="tag">留学缴费</span>
+        <span class="tag">国际付款</span>
+        <span class="tag">外币资产关注</span>
+        <span class="tag">海外消费预算</span>
+      </div>
+    </section>
+
+    <footer class="footer">
+      © 2026 实时汇率与趋势分析助手 · 页面内汇率为演示数据，仅供参考，不构成投资建议。
+    </footer>
+  </main>
+
+  <script>
+    const ratesToCNY = {
+      USD: 7.28,
+      CNY: 1,
+      EUR: 7.85,
+      JPY: 0.049,
+      GBP: 9.15,
+      HKD: 0.93
+    };
+
+    const currencyNames = {
+      USD: "美元",
+      CNY: "人民币",
+      EUR: "欧元",
+      JPY: "日元",
+      GBP: "英镑",
+      HKD: "港币"
+    };
+
+    const trendProfiles = {
+      "USD/CNY": {
+        base: 7.28,
+        historyDrift: 0.012,
+        forecastDrift: 0.0036,
+        volatility: 0.006,
+        label: "美元兑人民币",
+        watchPoint: "7.30"
+      },
+      "EUR/CNY": {
+        base: 7.85,
+        historyDrift: -0.008,
+        forecastDrift: -0.0025,
+        volatility: 0.008,
+        label: "欧元兑人民币",
+        watchPoint: "7.80"
+      },
+      "JPY/CNY": {
+        base: 0.049,
+        historyDrift: 0.004,
+        forecastDrift: 0.0015,
+        volatility: 0.009,
+        label: "日元兑人民币",
+        watchPoint: "0.050"
+      },
+      "GBP/CNY": {
+        base: 9.15,
+        historyDrift: 0.018,
+        forecastDrift: 0.005,
+        volatility: 0.011,
+        label: "英镑兑人民币",
+        watchPoint: "9.20"
+      },
+      "HKD/CNY": {
+        base: 0.93,
+        historyDrift: 0.002,
+        forecastDrift: 0.0008,
+        volatility: 0.003,
+        label: "港币兑人民币",
+        watchPoint: "0.94"
+      }
+    };
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat("zh-CN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 4
+      }).format(value);
+    }
+
+    function formatRate(value) {
+      if (value < 0.1) return value.toFixed(5);
+      if (value < 1) return value.toFixed(4);
+      return value.toFixed(4);
+    }
+
+    function formatPercent(value) {
+      const sign = value > 0 ? "+" : "";
+      return `${sign}${(value * 100).toFixed(2)}%`;
+    }
+
+    function setChangeClass(element, value) {
+      element.classList.remove("up", "down", "flat");
+      if (Math.abs(value) < 0.001) {
+        element.classList.add("flat");
+      } else if (value > 0) {
+        element.classList.add("up");
+      } else {
+        element.classList.add("down");
+      }
+    }
+
+    function buildTrendSeries(profile) {
+      const history = [];
+      const forecast = [];
+      const historyDays = 31;
+      const forecastDays = 7;
+
+      for (let index = 0; index < historyDays; index += 1) {
+        const progress = index / (historyDays - 1);
+        const wave = Math.sin(index * 0.62) * profile.volatility + Math.cos(index * 0.21) * profile.volatility * 0.55;
+        const value = profile.base * (1 - profile.historyDrift + profile.historyDrift * progress + wave);
+        history.push(Number(value.toFixed(6)));
+      }
+
+      history[history.length - 1] = profile.base;
+
+      for (let index = 1; index <= forecastDays; index += 1) {
+        const progress = index / forecastDays;
+        const wave = Math.sin((historyDays + index) * 0.58) * profile.volatility * 0.38;
+        const value = profile.base * (1 + profile.forecastDrift * progress + wave);
+        forecast.push(Number(value.toFixed(6)));
+      }
+
+      return { history, forecast };
+    }
+
+    function toSmoothPath(points) {
+      if (points.length < 2) return "";
+
+      let path = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+
+      for (let index = 0; index < points.length - 1; index += 1) {
+        const current = points[index];
+        const next = points[index + 1];
+        const previous = points[index - 1] || current;
+        const afterNext = points[index + 2] || next;
+        const cp1x = current.x + (next.x - previous.x) / 6;
+        const cp1y = current.y + (next.y - previous.y) / 6;
+        const cp2x = next.x - (afterNext.x - current.x) / 6;
+        const cp2y = next.y - (afterNext.y - current.y) / 6;
+
+        path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${next.x.toFixed(2)} ${next.y.toFixed(2)}`;
+      }
+
+      return path;
+    }
+
+    function createSvgElement(name, attributes = {}) {
+      const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+      Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+      return element;
+    }
+
+    function updateTrendChart() {
+      const selectedPair = document.getElementById("trendPair").value;
+      const profile = trendProfiles[selectedPair];
+      const { history, forecast } = buildTrendSeries(profile);
+      const allValues = [...history, ...forecast];
+      const svg = document.getElementById("trendChart");
+      const width = 760;
+      const height = 280;
+      const margin = { top: 18, right: 54, bottom: 34, left: 62 };
+      const chartWidth = width - margin.left - margin.right;
+      const chartHeight = height - margin.top - margin.bottom;
+      const minValue = Math.min(...allValues) * 0.997;
+      const maxValue = Math.max(...allValues) * 1.003;
+      const totalPoints = history.length + forecast.length;
+      const todayIndex = history.length - 1;
+      const xStep = chartWidth / (totalPoints - 1);
+      const mapX = (index) => margin.left + index * xStep;
+      const mapY = (value) => margin.top + (maxValue - value) / (maxValue - minValue) * chartHeight;
+      const historyPoints = history.map((value, index) => ({ x: mapX(index), y: mapY(value), value }));
+      const forecastPoints = [
+        { x: mapX(todayIndex), y: mapY(history[history.length - 1]), value: history[history.length - 1] },
+        ...forecast.map((value, index) => ({ x: mapX(todayIndex + index + 1), y: mapY(value), value }))
+      ];
+
+      svg.innerHTML = `
+        <title id="trendChartTitle">${selectedPair} 汇率曲线图</title>
+        <desc id="trendChartDesc">蓝色实线表示过去一个月历史汇率，绿色虚线表示未来七天预测汇率。</desc>
+      `;
+
+      for (let index = 0; index <= 4; index += 1) {
+        const y = margin.top + chartHeight * index / 4;
+        const value = maxValue - (maxValue - minValue) * index / 4;
+        svg.appendChild(createSvgElement("line", {
+          x1: margin.left,
+          y1: y,
+          x2: width - margin.right,
+          y2: y,
+          class: "grid-line"
+        }));
+        svg.appendChild(createSvgElement("text", {
+          x: 8,
+          y: y + 4,
+          class: "axis-label"
+        })).textContent = formatRate(value);
+      }
+
+      const todayX = mapX(todayIndex);
+      const forecastArea = createSvgElement("rect", {
+        x: todayX,
+        y: margin.top,
+        width: width - margin.right - todayX,
+        height: chartHeight,
+        class: "forecast-area"
+      });
+      svg.appendChild(forecastArea);
+      svg.appendChild(createSvgElement("line", {
+        x1: todayX,
+        y1: margin.top,
+        x2: todayX,
+        y2: margin.top + chartHeight,
+        class: "today-marker"
+      }));
+
+      const labels = [
+        { text: "30天前", index: 0 },
+        { text: "15天前", index: 15 },
+        { text: "今日", index: todayIndex },
+        { text: "+7天", index: totalPoints - 1 }
+      ];
+
+      labels.forEach((item) => {
+        svg.appendChild(createSvgElement("text", {
+          x: mapX(item.index),
+          y: height - 10,
+          "text-anchor": item.index === 0 ? "start" : item.index === totalPoints - 1 ? "end" : "middle",
+          class: "axis-label"
+        })).textContent = item.text;
+      });
+
+      svg.appendChild(createSvgElement("path", {
+        d: toSmoothPath(historyPoints),
+        class: "history-line"
+      }));
+      svg.appendChild(createSvgElement("path", {
+        d: toSmoothPath(forecastPoints),
+        class: "forecast-line"
+      }));
+
+      historyPoints.filter((_, index) => index % 5 === 0 || index === todayIndex).forEach((point) => {
+        svg.appendChild(createSvgElement("circle", {
+          cx: point.x,
+          cy: point.y,
+          r: 3.5,
+          class: "chart-point history-point"
+        }));
+      });
+
+      forecastPoints.slice(1).forEach((point) => {
+        svg.appendChild(createSvgElement("circle", {
+          cx: point.x,
+          cy: point.y,
+          r: 3,
+          class: "chart-point forecast-point"
+        }));
+      });
+
+      const monthlyChange = (history[history.length - 1] - history[0]) / history[0];
+      const forecastChange = (forecast[forecast.length - 1] - history[history.length - 1]) / history[history.length - 1];
+      const rangePercent = (maxValue - minValue) / profile.base;
+      const direction = monthlyChange > 0.006 ? "小幅上涨" : monthlyChange < -0.006 ? "小幅下跌" : "区间震荡";
+      const forecastDirection = forecastChange > 0.002 ? "继续偏强" : forecastChange < -0.002 ? "短线偏弱" : "大致稳定";
+      const volatilityText = rangePercent > 0.035 ? "中高波动" : rangePercent > 0.018 ? "中等波动" : "中低波动";
+
+      const currentEl = document.getElementById("trendCurrent");
+      const monthlyEl = document.getElementById("trendMonthlyChange");
+      const forecastEl = document.getElementById("trendForecastChange");
+      currentEl.textContent = formatRate(history[history.length - 1]);
+      monthlyEl.textContent = formatPercent(monthlyChange);
+      forecastEl.textContent = formatPercent(forecastChange);
+      setChangeClass(monthlyEl, monthlyChange);
+      setChangeClass(forecastEl, forecastChange);
+
+      document.getElementById("trendDirectionTitle").textContent = `近期趋势：${direction}`;
+      document.getElementById("trendDirectionText").textContent = `过去 30 天 ${selectedPair}（${profile.label}）${direction}，演示累计涨跌幅约 ${formatPercent(monthlyChange)}。`;
+      document.getElementById("trendVolatilityTitle").textContent = `波动判断：${volatilityText}`;
+      document.getElementById("trendVolatilityText").textContent = `近一个月汇率区间约为 ${formatRate(minValue)} - ${formatRate(maxValue)}，未来 7 天预测走势${forecastDirection}。`;
+      document.getElementById("trendAdviceText").textContent = `若计划换汇或跨境支付，可结合目标汇率提醒，重点关注 ${profile.watchPoint} 附近变化。`;
+    }
+
+    function convertCurrency() {
+      const amount = Number(document.getElementById("amount").value);
+      const from = document.getElementById("fromCurrency").value;
+      const to = document.getElementById("toCurrency").value;
+      const resultAmount = document.getElementById("resultAmount");
+      const resultMeta = document.getElementById("resultMeta");
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        resultAmount.textContent = "请输入有效金额";
+        resultMeta.textContent = "金额需大于 0。";
+        return;
+      }
+
+      const amountInCNY = amount * ratesToCNY[from];
+      const converted = amountInCNY / ratesToCNY[to];
+      const pairRate = ratesToCNY[from] / ratesToCNY[to];
+
+      resultAmount.textContent = `${formatNumber(amount)} ${from} ≈ ${formatNumber(converted)} ${to}`;
+      resultMeta.textContent = `参考汇率：1 ${from} = ${pairRate.toFixed(4)} ${to}（${currencyNames[from]}兑${currencyNames[to]}）`;
+    }
+
+    function updateAlertPreview() {
+      const pair = document.getElementById("watchPair").value;
+      const condition = document.getElementById("condition").value;
+      const targetValue = document.getElementById("targetValue").value;
+      const preview = document.getElementById("alertPreview");
+
+      if (condition === "明显上涨或下跌") {
+        preview.textContent = `将在 ${pair} 出现明显上涨或下跌趋势时提醒你。`;
+        return;
+      }
+
+      preview.textContent = `将在 ${pair} ${condition} ${targetValue || "目标值"} 时提醒你。`;
+    }
+
+    function saveAlert() {
+      const preview = document.getElementById("alertPreview").textContent;
+      alert(`提醒已模拟保存：\n${preview}`);
+    }
+
+    document.getElementById("amount").addEventListener("input", convertCurrency);
+    document.getElementById("fromCurrency").addEventListener("change", convertCurrency);
+    document.getElementById("toCurrency").addEventListener("change", convertCurrency);
+    convertCurrency();
+    updateAlertPreview();
+    updateTrendChart();
+  </script>
+</body>
+</html>
